@@ -1,0 +1,5 @@
+node_modules
+dist
+tinylink.db
+.env
+.DS_Store

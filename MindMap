@@ -1,0 +1,19 @@
+http layer
+receives and send requests
+
+service layer
+business logic
+
+db layer
+read write
+
+utility layer
+helper functions
+
+controller -> HTTP concerns
+service -> business logic
+repository -> database access
+schema -> request validation
+types -> domain types
+middleware -> cross-cutting request behavior
+errors -> error consistency
