@@ -1,5 +1,5 @@
 node_modules
 dist
-tinylink.db
 .env
+tinylink.db
 .DS_Store

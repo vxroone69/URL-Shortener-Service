@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: tinylink-postgres
+
+    # These values create the local database, user, and password.
+    environment:
+      POSTGRES_USER: tinylink
+      POSTGRES_PASSWORD: tinylink
+      POSTGRES_DB: tinylink
+
+    # Expose Postgres on localhost:5432.
+    ports:
+      - "5433:5432"
+
+    # Keep database data even if the container restarts.
+    volumes:
+      - tinylink-postgres-data:/var/lib/postgresql/data
+
+    # Helps Docker know when Postgres is actually ready.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tinylink -d tinylink"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  tinylink-postgres-data:

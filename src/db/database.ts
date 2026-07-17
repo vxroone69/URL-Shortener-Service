@@ -1,39 +1,40 @@
-import sqlite3 from "sqlite3";
+import { Pool } from "pg";
+import type { QueryResultRow } from "pg";
 import { env } from "../config/env.js";
 
-export const database = new sqlite3.Database(env.DATABASE_FILE);
+// Create a Postgres connection pool.
+//
+// Intuition:
+// A backend server can receive many requests.
+// Instead of opening a new database connection for every request,
+// the pool keeps reusable connections ready.
+console.log("App DATABASE_URL:", env.DATABASE_URL);
 
-export function run(
+export const pool = new Pool({
+    connectionString: env.DATABASE_URL,
+});
+
+// Run a SQL query that may return multiple rows.
+//
+// Type note:
+// pg requires result row types to extend QueryResultRow.
+// Also, pg expects a mutable params array, so we use unknown[] instead of readonly unknown[].
+export async function query<T extends QueryResultRow = QueryResultRow>(
     sql: string,
-    params: readonly unknown[] = []
-): Promise<{ id: number; changes: number }> {
-    return new Promise((resolve, reject) => {
-        database.run(sql, params, function (error) {
-            if (error) {
-                reject(error);
-                return;
-            }
-
-            resolve({
-                id: this.lastID,
-                changes: this.changes,
-            });
-        });
-    });
+    params: unknown[] = []
+): Promise<T[]> {
+    const result = await pool.query<T>(sql, params);
+    return result.rows;
 }
 
-export function get<T>(
+// Run a SQL query where we expect zero or one row.
+//
+// Used for lookups like:
+// SELECT * FROM links WHERE short_code = $1
+export async function queryOne<T extends QueryResultRow = QueryResultRow>(
     sql: string,
-    params: readonly unknown[] = []
+    params: unknown[] = []
 ): Promise<T | undefined> {
-    return new Promise((resolve, reject) => {
-        database.get(sql, params, (error, row: T) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-
-            resolve(row);
-        });
-    });
+    const rows = await query<T>(sql, params);
+    return rows[0];
 }

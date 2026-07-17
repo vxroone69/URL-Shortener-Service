@@ -20,7 +20,13 @@ function toLinkDto(record: LinkRecord): LinkDto {
 }
 
 function isUniqueConstraintError(error: unknown): boolean {
-    return error instanceof Error && error.message.includes("UNIQUE");
+    if (!(error instanceof Error)) {
+        return false;
+    }
+
+    const maybePgError = error as Error & { code?: string };
+
+    return maybePgError.code === "23505" || error.message.includes("UNIQUE");
 }
 
 export async function createShortLink(
